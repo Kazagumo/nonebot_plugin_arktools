@@ -30,7 +30,10 @@ setuptools.setup(
         'pillow>=8.2.0',
         'playwright>=1.22.0',
         'lxml>=4.8.0',
-        'tencentcloud-sdk-python>=3.0.675',
+        'paddlepaddle',
+        'paddleocr>=2.0.1',
+        'opencv-python',
+        'opencv-python-headless<4.3',
         'aiofiles>=22.1.0'
     ],
     python_requires=">=3.7.3"
