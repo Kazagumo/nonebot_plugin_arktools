@@ -43,28 +43,23 @@ def process_word_tags(tags: list):
 
 
 def ocr(image_url: str) -> set:
-    """调用腾讯云进行 OCR 识别公招标签"""
+    """调用PaddleOCR进行 OCR 识别公招标签"""
     with open(Path(__file__).parent.parent / "_data" / "operator_info" / "json" / "gacha_table.json", "r", encoding="utf-8") as f:
         TAGS = json.load(f)
     TAGS = {_["tagName"] for _ in TAGS["gachaTags"]}
-    try:
-        cred = credential.Credential(recruit_config.tencent_cloud_secret_id, recruit_config.tencent_cloud_secret_key)
-        client = ocr_client.OcrClient(cred, "ap-beijing")
-        req = models.GeneralAccurateOCRRequest()
-        params = {"ImageUrl": image_url}
-        req.from_json_string(json.dumps(params))
-        resp = client.GeneralAccurateOCR(req)
-        data = json.loads(resp.to_json_string())
-
-    except TencentCloudSDKException as e:
-        logger.error(f"腾讯云识别公招标签出错: {e}")
-        return set()
-
-    else:
-        filtered_char: set = {f"{i}" for i in range(10)}.union({chr(i) for i in range(65, 90)})  # 过滤字母和数字
-        pre_tags = {word["DetectedText"] for word in data["TextDetections"] if all(c not in word["DetectedText"] for c in filtered_char)}
-
-        return {tag for tag in pre_tags if tag in TAGS}
+    resp = requests.get(image_url,headers=headers)
+    img2=Image.open(fp=BytesIO(resp.content))
+    img2=np.array(img2)
+    ocr = PaddleOCR(use_angle_cls=True, lang="ch")  # need to run only once to download and load model into memory
+    result = ocr.ocr(img2, cls=True)
+    startdetect = True
+    processed_tags = set()
+    for line in result:
+        if startdetect:
+            for tag in TAGS:
+                if line[1][0] in tag:
+                    processed_tags.add(tag)
+    return processed_tags
 
 
 @dataclass
