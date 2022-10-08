@@ -6,9 +6,6 @@ from dataclasses import dataclass
 from itertools import permutations
 
 import json
-from tencentcloud.common import credential
-from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
-from tencentcloud.ocr.v20181119 import ocr_client, models
 from pathlib import Path
 from PIL import Image, ImageFont
 from PIL.ImageDraw import Draw, ImageDraw
